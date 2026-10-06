@@ -10,3 +10,6 @@ data class Activity(
     val daysSinceLastPerformed: Long
 )
 
+/** Regra principal: dias = hoje - última realização (só datas, sem hora). */
+fun calculateDaysSince(lastPerformedAt: LocalDate, today: LocalDate): Long =
+    ChronoUnit.DAYS.between(lastPerformedAt, today).coerceAtLeast(0)
