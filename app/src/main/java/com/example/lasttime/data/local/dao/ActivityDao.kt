@@ -30,6 +30,7 @@ abstract class ActivityDao {
     @Query("DELETE FROM activities WHERE id = :id")
     abstract suspend fun deleteActivity(id: Long): Int
 
+    // ---------- histórico ----------
     @Insert
     abstract suspend fun insertHistory(entry: ActivityHistoryEntity): Long
 
@@ -40,13 +41,16 @@ abstract class ActivityDao {
     abstract suspend fun countHistoryOn(activityId: Long, date: LocalDate): Int
 
     // ---------- operações compostas (transação) ----------
+    /** Cria a atividade e o primeiro registro do histórico de forma atômica. */
+    @Transaction
     open suspend fun insertActivityWithHistory(name: String, date: LocalDate): Long {
         val id = insertActivity(ActivityEntity(name = name, lastPerformedAt = date))
         insertHistory(ActivityHistoryEntity(activityId = id, performedAt = date))
         return id
     }
 
-    /** "Hoje": cria o registro no histórico e atualiza lastPerformedAt */
+    /** "Hoje": cria o registro no histórico e atualiza lastPerformedAt, sem duplicar. */
+    @Transaction
     open suspend fun markPerformed(id: Long, date: LocalDate): MarkOutcome {
         if (getActivityById(id) == null) return MarkOutcome.NOT_FOUND
         if (countHistoryOn(id, date) > 0) return MarkOutcome.ALREADY_MARKED_TODAY

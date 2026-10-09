@@ -12,6 +12,7 @@ data class HolidayDto(
     val name: String
 )
 
+/** Só fala HTTP. Não conhece Room nem UI. API pública: https://date.nager.at */
 class CalendarApiService(private val client: HttpClient) {
 
     suspend fun getPublicHolidays(year: Int, countryCode: String = "BR"): List<HolidayDto> =
